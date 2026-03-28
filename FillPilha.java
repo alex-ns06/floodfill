@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class Fill {
+public class FillPilha {
     // Declarando os atributos
     private BufferedImage imagem;
     private int corFundo;
@@ -14,7 +14,7 @@ public class Fill {
     private int y;
 
     // Declarando o construtor
-    public Fill(BufferedImage imagem, int x, int y) {
+    public FillPilha(BufferedImage imagem, int x, int y) {
         this.imagem = imagem;
 
         // Pegando a altura e largura da imagem
