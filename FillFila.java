@@ -1,33 +1,31 @@
-import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import javax.imageio.ImageIO;
 
-public class FillPilha {
-    // Declarando os atributos
+public class FillFila {
     private BufferedImage imagem;
     private int corFundo;
     private int novaCor;
     private int largura;
     private int altura;
-    private int x;
-    private int y;
+    private int inicioX;
+    private int inicioY;
 
-    // Declarando o construtor
-    public FillPilha(BufferedImage imagem, int x, int y) {
+    public FillFila(BufferedImage imagem, int inicioX, int inicioY) {
         this.imagem = imagem;
-        this.x = x;
-        this.y = y;
+        this.inicioX = inicioX;
+        this.inicioY = inicioY;
 
         // Pegando a altura e largura da imagem
         this.largura = imagem.getWidth();
         this.altura = imagem.getHeight();
-
+        
         // Pegando a cor do ponto inicial
-        this.corFundo = imagem.getRGB(x,y);
-
+        this.corFundo = imagem.getRGB(inicioX, inicioY);
+        
         // Atribuindo a nova cor a ser preenchida (a cor a respeito é um tom escuro de roxo)
-        this.novaCor = new Color(123, 45, 167).getRGB();
+        this.novaCor = new Color(123, 45, 167).getRGB(); 
     }
 
     // Método para execução da lógica principal usando loop while
@@ -37,12 +35,12 @@ public class FillPilha {
             System.out.println("A cor inicial já é a cor de preenchimento.");
             return;
         }
+        
+        // Definindo a altura e largura inicial para não dar "Fila Cheia" caso a imagem seja muito grande
+        Fila filaPrimariaExecucao = new Fila(largura * altura);
+        filaPrimariaExecucao.enfileirar(new Ponto(inicioX, inicioY));
 
-        // Definindo a largura e altura inicial para não dar "Pilha Cheia" caso a imagem seja muito grande
-        Pilha pilhaPrimeiraExecucao = new Pilha(largura * altura);
-        pilhaPrimeiraExecucao.empilhar(new Ponto(x, y));
-
-        // Variáveis de controle da execução
+        // VAriáveis de controle da execução
         int controleCorNova = 0;
         int contadorFrames = 0;
 
@@ -52,30 +50,31 @@ public class FillPilha {
             pastaFrames.mkdir();
         }
 
-        System.out.println("Iniciando FloodFill");
+        System.out.println("Iniciando Flood Fill com Fila...");
 
-        // Loop da lógica principal
-        while (!pilhaPrimeiraExecucao.estaVazia()) {
-            Ponto pixelSentinela = pilhaPrimeiraExecucao.desempilhar();
+        // loop da lógica principal
+        while (!filaPrimariaExecucao.estaVazia()) {
+            Ponto pixelSentinela = filaPrimariaExecucao.desenfileirar();
             int x = pixelSentinela.x;
             int y = pixelSentinela.y;
 
-            // Verifica se não saiu dos limites da matriz da imagem
-            if (x < 0 || x>= largura || y < 0 || y >= altura) {
+            // Verifica se não saiu dos limites
+            if (x < 0 || x >= largura || y < 0 || y >= altura) {
                 continue;
             }
 
-            // Verifica se a cor de fundo é a cor que queremos substituir
-            if (imagem.getRGB(x,y) == corFundo) {
-                // Pinta com a cor nova
-                imagem.setRGB(x,y, novaCor);
+            // Verifica se a cor atual é a cor que queremos substituir
+            if (imagem.getRGB(x, y) == corFundo) {
+                
+                // Pinta com a nova cor
+                imagem.setRGB(x, y, novaCor);
                 controleCorNova++;
 
-                // Empilha os vizinhos
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x, y - 1));
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x, y + 1));
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x - 1, y));
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x + 1, y));
+                // Enfileira os vizinhos
+                filaPrimariaExecucao.enfileirar(new Ponto(x, y - 1));
+                filaPrimariaExecucao.enfileirar(new Ponto(x, y + 1));
+                filaPrimariaExecucao.enfileirar(new Ponto(x - 1, y));
+                filaPrimariaExecucao.enfileirar(new Ponto(x + 1, y));
 
                 // A cada X pixels pintados, a imagem salva automaticamente (deve ser alterado de acordo com o tamanho da imagem original)
                 if (controleCorNova % 200 == 0) {
@@ -84,21 +83,21 @@ public class FillPilha {
                 }
             }
         }
-
+        
         // Salva a imagem final depois do loop
         salvarFrame(contadorFrames);
-        System.out.println("Processo concluído\nTotal de frames: " + controleCorNova);
+        System.out.println("Processo concluído! Total de pixels: " + controleCorNova);
     }
 
     // Método criado para salvar o a progressão das imagens ao longo da execução do loop
-    private void salvarFrame(int contadorFrames) {
+    private void salvarFrame(int numeroFrame) {
         try {
             /*
                 Salva o arquivo com 5 casas decimais, ideal caso a imagem tenha muitos pixels ou caso o salvamento seja feito
                 em intervalos de poucos pixels. É possível alterar para menos casas decimais para evitar nomes muito grandes.
                 Isso garante que os arquivos fiquem em ordem alfabética, facilitando a animação quando a progressão for exibida.
              */
-            String nomeArquivo = String.format("frames/frame_%05d.png", contadorFrames);
+            String nomeArquivo = String.format("frames/frame_%05d.png", numeroFrame);
 
             // Instância do objeto File que cria um arquivo com o nome acima
             File arquivoSaida = new File(nomeArquivo);
@@ -106,7 +105,7 @@ public class FillPilha {
             // Escreve no disco o estado atual da imagem do BufferedImage, utilizando o formato PNG
             ImageIO.write(imagem, "png", arquivoSaida);
         } catch (Exception e) {
-            System.out.println("Erro ao salvar arquivo: " + e.getMessage());
+            System.out.println("Erro ao salvar frame: " + e.getMessage());
         }
     }
 }
