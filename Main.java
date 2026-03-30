@@ -8,7 +8,7 @@ public class Main {
             java.awt.image.BufferedImage imagem =
                 javax.imageio.ImageIO.read(new java.io.File(caminhoImagem));
 
-            System.out.println("Escolha o metodo:");
+            System.out.println("Escolha o método:");
             System.out.println("1 - Fila");
             System.out.println("2 - Pilha");
 
@@ -23,7 +23,7 @@ public class Main {
                 fill.executar();
                 System.out.println("Executado com Pilha.");
             } else {
-                System.out.println("Opcao invalida.");
+                System.out.println("Opção inválida.");
             }
 
         } catch (Exception e) {

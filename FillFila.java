@@ -96,8 +96,9 @@ public class FillFila {
                 Salva o arquivo com 5 casas decimais, ideal caso a imagem tenha muitos pixels ou caso o salvamento seja feito
                 em intervalos de poucos pixels. É possível alterar para menos casas decimais para evitar nomes muito grandes.
                 Isso garante que os arquivos fiquem em ordem alfabética, facilitando a animação quando a progressão for exibida.
+                Mudado para 3 casas decimais, já que os testes deram até 31 arquivos.
              */
-            String nomeArquivo = String.format("frames/frame_%05d.png", numeroFrame);
+            String nomeArquivo = String.format("frames/frame_%03d.png", numeroFrame);
 
             // Instância do objeto File que cria um arquivo com o nome acima
             File arquivoSaida = new File(nomeArquivo);
