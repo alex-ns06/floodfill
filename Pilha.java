@@ -8,20 +8,13 @@ public class Pilha {
     }
 
     public void empilhar(Ponto p) {
-        if (topo == dados.length - 1) {
-            throw new RuntimeException("Pilha cheia");
-        }
-        dados[++topo] = p;
+        if (topo < dados.length - 1) dados[++topo] = p;
     }
 
     public Ponto desempilhar() {
-        if (estaVazia()) {
-            throw new RuntimeException("Pilha vazia");
-        }
+        if (estaVazia()) return null;
         return dados[topo--];
     }
 
-    public boolean estaVazia() {
-        return topo == -1;
-    }
+    public boolean estaVazia() { return topo == -1; }
 }

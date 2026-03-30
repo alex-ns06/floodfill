@@ -1,87 +1,47 @@
-import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class FillPilha {
     private BufferedImage imagem;
-    private int corFundo;
-    private int novaCor;
-    private int largura;
-    private int altura;
-    private int x;
-    private int y;
+    private int largura, altura;
+    private SwingProgresso gui;
 
-    public FillPilha(BufferedImage imagem, int x, int y) {
+    private int corDePreenchimento = new Color(255, 0, 0).getRGB();
+
+    public FillPilha(BufferedImage imagem, SwingProgresso gui) {
         this.imagem = imagem;
-        this.x = x;
-        this.y = y;
-
         this.largura = imagem.getWidth();
         this.altura = imagem.getHeight();
-
-        this.corFundo = imagem.getRGB(x,y);
-
-        this.novaCor = new Color(123, 45, 167).getRGB();
+        this.gui = gui;
     }
 
-    public void executar() {
-        if (corFundo == novaCor) {
-            System.out.println("A cor inicial já é a cor de preenchimento.");
-            return;
-        }
+    public void executar(int x, int y) {
+        int corFundo = imagem.getRGB(x, y);
+        if (corFundo == corDePreenchimento) return;
 
-        Pilha pilhaPrimeiraExecucao = new Pilha(largura * altura);
-        pilhaPrimeiraExecucao.empilhar(new Ponto(x, y));
+        Pilha pilha = new Pilha(largura * altura);
+        pilha.empilhar(new Ponto(x, y));
 
-        int controleCorNova = 0;
-        int contadorFrames = 0;
+        int pixelsPintados = 0;
+        while (!pilha.estaVazia()) {
+            Ponto p = pilha.desempilhar();
+            if (p.x < 0 || p.x >= largura || p.y < 0 || p.y >= altura) continue;
 
-        File pastaFrames = new File("frames");
-        if (!pastaFrames.exists()) {
-            pastaFrames.mkdir();
-        }
+            if (imagem.getRGB(p.x, p.y) == corFundo) {
+                imagem.setRGB(p.x, p.y, corDePreenchimento);
+                pixelsPintados++;
 
-        System.out.println("Iniciando FloodFill");
+                pilha.empilhar(new Ponto(p.x, p.y - 1));
+                pilha.empilhar(new Ponto(p.x, p.y + 1));
+                pilha.empilhar(new Ponto(p.x - 1, p.y));
+                pilha.empilhar(new Ponto(p.x + 1, p.y));
 
-        while (!pilhaPrimeiraExecucao.estaVazia()) {
-            Ponto pixelSentinela = pilhaPrimeiraExecucao.desempilhar();
-            int x = pixelSentinela.x;
-            int y = pixelSentinela.y;
-
-            if (x < 0 || x>= largura || y < 0 || y >= altura) {
-                continue;
-            }
-
-            if (imagem.getRGB(x,y) == corFundo) {
-                imagem.setRGB(x,y, novaCor);
-                controleCorNova++;
-
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x, y - 1));
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x, y + 1));
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x - 1, y));
-                pilhaPrimeiraExecucao.empilhar(new Ponto(x + 1, y));
-
-                if (controleCorNova % 200 == 0) {
-                    salvarFrame(contadorFrames);
-                    contadorFrames++;
+                if (pixelsPintados % 50 == 0) {
+                    gui.atualizar();
+                    try { Thread.sleep(5); } catch (Exception e) {}
                 }
             }
         }
-
-        salvarFrame(contadorFrames);
-        System.out.println("Processo concluído\nTotal de frames: " + controleCorNova);
-    }
-
-    private void salvarFrame(int contadorFrames) {
-        try {
-            String nomeArquivo = String.format("frames/frame_%03d.png", contadorFrames);
-
-            File arquivoSaida = new File(nomeArquivo);
-
-            ImageIO.write(imagem, "png", arquivoSaida);
-        } catch (Exception e) {
-            System.out.println("Erro ao salvar arquivo: " + e.getMessage());
-        }
+        gui.atualizar();
     }
 }

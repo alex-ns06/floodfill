@@ -1,33 +1,40 @@
+import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
         try {
-            String caminhoImagem = "imagem.png";
-            int x = 60;
-            int y = 60;
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int larguraTela = (int) screenSize.getWidth();
+            int alturaTela = (int) screenSize.getHeight();
 
-            java.awt.image.BufferedImage imagem =
-                javax.imageio.ImageIO.read(new java.io.File(caminhoImagem));
+            BufferedImage imgOriginal = ImageIO.read(new File("imagem.png"));
+            BufferedImage img = new BufferedImage(larguraTela, alturaTela, BufferedImage.TYPE_INT_ARGB);
 
-            System.out.println("Escolha o método:");
-            System.out.println("1 - Fila");
-            System.out.println("2 - Pilha");
+            Graphics2D g = img.createGraphics();
+            g.drawImage(imgOriginal, 0, 0, larguraTela, alturaTela, null);
+            g.dispose();
 
-            int opcao = System.in.read() - '0';
+            Scanner sc = new Scanner(System.in);
+            System.out.println("1-Fila | 2-Pilha:");
+            int op = sc.nextInt();
 
-            if (opcao == 1) {
-                FillFila fill = new FillFila(imagem, x, y);
-                fill.executar();
-                System.out.println("Executado com Fila.");
-            } else if (opcao == 2) {
-                FillPilha fill = new FillPilha(imagem, x, y);
-                fill.executar();
-                System.out.println("Executado com Pilha.");
-            } else {
-                System.out.println("Opção inválida.");
+            SwingProgresso gui = new SwingProgresso(img);
+
+            FillFila ff = new FillFila(img, gui);
+            FillPilha fp = new FillPilha(img, gui);
+
+            while (true) {
+                gui.aguardarClique();
+                if (op == 1) ff.executar(gui.getClickX(), gui.getClickY());
+                else fp.executar(gui.getClickX(), gui.getClickY());
             }
 
         } catch (Exception e) {
-            System.out.println("Erro: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
